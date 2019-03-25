@@ -1,6 +1,8 @@
 const Apify = require('apify');
 
 Apify.main(async () => {
+    console.log('WEBSITE CONTENT CHECKER started');
+
     // Fetch the input of the actor.
     // If you're using INPUT_SCHEMA.json, the input is automatically checked for you.
     const input = await Apify.getValue('INPUT');
@@ -16,5 +18,7 @@ Apify.main(async () => {
     const output = {
         message: `${input.message} Hello my friend!`
     };
-    await Apify.setValue('OUTPUT', output)
+    await Apify.setValue('OUTPUT', output);
+
+    console.log('WEBSITE CONTENT CHECKER finished');
 });
