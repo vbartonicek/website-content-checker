@@ -1,6 +1,12 @@
 {
-	"name": "actor-quick-start",
-	"version": "0.0",
-	"buildTag": "latest",
-	"env": null
+	"name": "website-content-checker",
+	"actId": null,
+	"version": {
+		"versionNumber": "0.1",
+		"buildTag": "latest",
+		"envVars": [],
+		"sourceType": "TARBALL",
+		"tarballUrl": null
+	},
+	"template": "basic"
 }
