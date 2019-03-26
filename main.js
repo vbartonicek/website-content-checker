@@ -1,46 +1,56 @@
 const Apify = require('apify');
 
-// Apify.utils contains various utilities, e.g. for logging.
-// Here we turn off the logging of unimportant messages.
-const {log} = Apify.utils;
-log.setLevel(log.LEVELS.WARNING);
-
-
-// Apify.main() function wraps the crawler logic (it is optional).
 Apify.main(async () => {
-    // Prepare a list of URLs to crawl
     const requestList = new Apify.RequestList({
         sources: [
-            { url: 'https://apify.com/library', userData: { query: '.itemsWrapper .item h3' } },
-            // { url: 'http://www.example.com/page-2' },
+            { url: 'http://www.apify.com/library', userData: { query: '.itemsWrapper .item:first-child h3' } },
+            { url: 'http://www.apify.com', userData: { query: 'footer #foot-tweet-text' } },
+            { url: 'http://www.apify.com/pricing', userData: { query: 'footer #xxx' } },
         ],
     });
+
+// This call loads and parses the URLs from the remote file.
     await requestList.initialize();
 
-    // Create an instance of the CheerioCrawler class - a crawler
-    // that automatically loads the URLs and parses their HTML using the cheerio library.
-    const crawler = new Apify.CheerioCrawler({
+    // Create an instance of the PuppeteerCrawler class - a crawler
+    // that automatically loads the URLs in headless Chrome / Puppeteer.
+    const crawler = new Apify.PuppeteerCrawler({
         requestList,
-        handlePageFunction: async ({request, response, html, $}) => {
-            const data = [];
 
-            // console.log(request.url);
-            console.log($(request.userData.query).text());
-            // console.log($(request.query));
+        // Here you can set options that are passed to the Apify.launchPuppeteer() function.
+        // For example, you can set "slowMo" to slow down Puppeteer operations to simplify debugging
+        launchPuppeteerOptions: { slowMo: 500 },
 
-            // data.push();
+        // Stop crawling after several pages
+        maxRequestsPerCrawl: 10,
 
-            // Do some data extraction from the page with Cheerio.
-            // $('.some-collection').each((index, el) => {
-            //     data.push({title: $(el).find('.some-title').text()});
-            // });
+        handlePageFunction: async ({ request, page }) => {
+            // A function to be evaluated by Puppeteer within the browser context.
+            const pageFunction = ($items) => {
+                const data = [];
 
-            // Save the data to dataset.
+                $items.forEach(($item) => {
+                    data.push({
+                        content: $item.innerText,
+                    });
+                });
+
+                return data;
+            };
+            const data = await page.$$eval(request.userData.query, pageFunction);
+
+            console.log(`${data.length ? 'SUCCESS' : 'FAILED'} - ${request.url} - ${request.userData.query}`)
+
+            // Store the results to the default dataset.
+            await Apify.pushData(data);
+        },
+
+        // This function is called if the page processing failed more than maxRequestRetries+1 times.
+        handleFailedRequestFunction: async ({ request }) => {
+            console.log(`Request ${request.url} failed too many times`);
             await Apify.pushData({
-                url: request.url,
-                // html,
-                data,
-            })
+                '#debug': Apify.utils.createRequestDebugInfo(request),
+            });
         },
     });
 
@@ -49,4 +59,3 @@ Apify.main(async () => {
 
     console.log('Crawler finished.');
 });
-
