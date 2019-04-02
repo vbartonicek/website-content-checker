@@ -19,12 +19,18 @@ Apify.main(async () => {
 
         // Here you can set options that are passed to the Apify.launchPuppeteer() function.
         // For example, you can set "slowMo" to slow down Puppeteer operations to simplify debugging
-        launchPuppeteerOptions: { slowMo: 500 },
+        launchPuppeteerOptions: {
+            slowMo: 500,
+            headless: true,
+        },
 
         // Stop crawling after several pages
         maxRequestsPerCrawl: 10,
 
         handlePageFunction: async ({ request, page }) => {
+            // User email for reports
+            const userEmail = 'vratislav@apify.com';
+
             // A function to be evaluated by Puppeteer within the browser context.
             const pageFunction = ($items) => {
                 const data = [];
@@ -39,7 +45,21 @@ Apify.main(async () => {
             };
             const data = await page.$$eval(request.userData.query, pageFunction);
 
-            console.log(`${data.length ? 'SUCCESS' : 'FAILED'} - ${request.url} - ${request.userData.query}`)
+            if (data.length) {
+                console.log(`Test succeeded - ${request.url} - ${request.userData.query}`);
+            }
+            else {
+                console.log(`Test failed - ${request.url} - ${request.userData.query}`);
+
+                //send mail
+                console.log('Sending mail...');
+                await Apify.call('apify/send-mail', {
+                    to: userEmail,
+                    subject: 'Apify Website Content Checker - test failed!',
+                    text: 'URL: ' + request.url + '\n' +
+                        'Selector: "' + request.userData.query + '"\n',
+                });
+            }
 
             // Store the results to the default dataset.
             await Apify.pushData(data);
