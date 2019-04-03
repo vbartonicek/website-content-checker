@@ -3,7 +3,7 @@ const Apify = require('apify');
 Apify.main(async () => {
     const requestList = new Apify.RequestList({
         sources: [
-            { url: 'http://www.apify.com/library', userData: { query: '.itemsWrapper .item:first-child h3' } },
+            { url: 'http://www.apify.com/library', userData: { query: '.itemsWrapper .item' } },
             { url: 'http://www.apify.com', userData: { query: 'footer #foot-tweet-text' } },
             { url: 'http://www.apify.com/pricing', userData: { query: 'footer #xxx' } },
         ],
@@ -62,7 +62,13 @@ Apify.main(async () => {
             }
 
             // Store the results to the default dataset.
-            await Apify.pushData(data);
+            await Apify.pushData({
+                title: await page.title(),
+                url: request.url,
+                query: request.userData.query,
+                status: data.length ? true : false,
+                response: data,
+            });
         },
 
         // This function is called if the page processing failed more than maxRequestRetries+1 times.
