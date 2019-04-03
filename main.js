@@ -20,12 +20,9 @@ Apify.main(async () => {
         // Here you can set options that are passed to the Apify.launchPuppeteer() function.
         // For example, you can set "slowMo" to slow down Puppeteer operations to simplify debugging
         launchPuppeteerOptions: {
-            slowMo: 500,
+            slowMo: 0,
             headless: true,
         },
-
-        // Stop crawling after several pages
-        maxRequestsPerCrawl: 10,
 
         handlePageFunction: async ({ request, page }) => {
             // User email for reports
@@ -43,8 +40,19 @@ Apify.main(async () => {
 
                 return data;
             };
+
             const data = await page.$$eval(request.userData.query, pageFunction);
 
+            // Store the results to the default dataset.
+            await Apify.pushData({
+                title: await page.title(),
+                url: request.url,
+                query: request.userData.query,
+                status: data.length ? true : false,
+                response: data,
+            });
+
+            // Report result and send email if the test failed
             if (data.length) {
                 console.log(`Test succeeded - ${request.url} - ${request.userData.query}`);
             }
@@ -60,15 +68,6 @@ Apify.main(async () => {
                         'Selector: "' + request.userData.query + '"\n',
                 });
             }
-
-            // Store the results to the default dataset.
-            await Apify.pushData({
-                title: await page.title(),
-                url: request.url,
-                query: request.userData.query,
-                status: data.length ? true : false,
-                response: data,
-            });
         },
 
         // This function is called if the page processing failed more than maxRequestRetries+1 times.
@@ -83,5 +82,5 @@ Apify.main(async () => {
     // Run the crawler and wait for it to finish.
     await crawler.run();
 
-    console.log('Crawler finished.');
+    console.log('Website content checker finished.');
 });
