@@ -10,6 +10,13 @@
       "description": "Email address where to send a report after the Actor finishes the testing",
       "prefill": "john@doe.xx",
       "editor": "textfield"
+    },
+    "urls": {
+      "title": "urls",
+      "type": "object",
+      "description": "Enter URLS and queries to check",
+      "prefill": { "url": "http://www.apify.com", "query": "footer #foot-tweet-text" },
+      "editor": "json"
     }
   },
   "required": []
