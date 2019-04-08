@@ -26,7 +26,7 @@ Apify.main(async () => {
 
         handlePageFunction: async ({ request, page }) => {
             // User email for reports
-            const userEmail = 'vratislav@apify.com';
+            const dataset = await Apify.openDataset('default');
 
             // A function to be evaluated by Puppeteer within the browser context.
             const pageFunction = ($items) => {
@@ -44,12 +44,12 @@ Apify.main(async () => {
             const data = await page.$$eval(request.userData.query, pageFunction);
 
             // Store the results to the default dataset.
-            await Apify.pushData({
+            await dataset.pushData({
                 title: await page.title(),
                 url: request.url,
                 query: request.userData.query,
                 status: data.length ? true : false,
-                response: data,
+                // response: data,
             });
 
             // Report result and send email if the test failed
@@ -58,15 +58,6 @@ Apify.main(async () => {
             }
             else {
                 console.log(`Test failed - ${request.url} - ${request.userData.query}`);
-
-                //send mail
-                console.log('Sending mail...');
-                await Apify.call('apify/send-mail', {
-                    to: userEmail,
-                    subject: 'Apify Website Content Checker - test failed!',
-                    text: 'URL: ' + request.url + '\n' +
-                        'Selector: "' + request.userData.query + '"\n',
-                });
             }
         },
 
@@ -81,6 +72,30 @@ Apify.main(async () => {
 
     // Run the crawler and wait for it to finish.
     await crawler.run();
+
+    // Create report email
+    const dataset = await Apify.openDataset('default');
+    const userEmail = 'vratislav@apify.com';
+
+    let emailText = '<h1>Website Content Checker report</h1>';
+    emailText += '<table border="1" bordercolor="#a0a9af">';
+    emailText += '<thead><tr><th>Status</th><th>URL</th><th>Query</th></tr></thead>';
+    emailText += '<tbody>';
+
+    await dataset.forEach(async (item) => {
+        emailText += `<tr><td>${item.status ? 'OK' : 'Failed'}</td><td>${item.url}</td><td>${item.query}</td></tr>`;
+    });
+    emailText += '</tbody>';
+    emailText += '</table>';
+
+    //send mail
+    console.log(`Sending email with the report to ${userEmail}.`);
+    await Apify.call('apify/send-mail', {
+        to: userEmail,
+        subject: 'Apify Website Content Checker report',
+        html: emailText,
+    });
+
 
     console.log('Website content checker finished.');
 });
