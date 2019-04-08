@@ -15,7 +15,7 @@
       "title": "URLs and selectors to test",
       "type": "array",
       "description": "Enter URLS and queries to check",
-      "prefill": [{ "url": "http://www.apify.com", "query": "footer #foot-tweet-text" }],
+      "prefill": [{ "url": "http://www.apify.com", "userData": { "query": "footer #foot-tweet-text" } }],
       "editor": "requestListSources"
     }
   },

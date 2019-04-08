@@ -1,14 +1,9 @@
 const Apify = require('apify');
 
 Apify.main(async () => {
-    const { email } = await Apify.getInput();
-
+    const { email, urls } = await Apify.getInput();
     const requestList = new Apify.RequestList({
-        sources: [
-            { url: 'http://www.apify.com/library', userData: { query: '.itemsWrapper .item' } },
-            { url: 'http://www.apify.com', userData: { query: 'footer #foot-tweet-text' } },
-            { url: 'http://www.apify.com/pricing', userData: { query: 'footer #xxx' } },
-        ],
+        sources: urls
     });
 
 // This call loads and parses the URLs from the remote file.
