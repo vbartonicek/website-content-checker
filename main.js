@@ -78,12 +78,16 @@ Apify.main(async () => {
     const userEmail = 'vratislav@apify.com';
 
     let emailText = '<h1>Website Content Checker report</h1>';
-    emailText += '<table border="1" bordercolor="#a0a9af">';
-    emailText += '<thead><tr><th>Status</th><th>URL</th><th>Query</th></tr></thead>';
+    emailText += '<table border="1" bordercolor="#a0a9af" cellspacing=”0” cellpadding=”0”>';
+    emailText += '<thead style="background:#d6d6d6"><tr><th>Status</th><th>URL</th><th>Query</th></tr></thead>';
     emailText += '<tbody>';
 
     await dataset.forEach(async (item) => {
-        emailText += `<tr><td>${item.status ? 'OK' : 'Failed'}</td><td>${item.url}</td><td>${item.query}</td></tr>`;
+        emailText += `<tr>
+                    <td style="color:${item.status ? '#00710e' : '#8e0000'};padding: 5px">${item.status ? 'OK' : 'Failed'}</td>
+                    <td style="padding: 5px">${item.url}</td>
+                    <td style="padding: 5px">${item.query}</td>
+                </tr>`;
     });
     emailText += '</tbody>';
     emailText += '</table>';
