@@ -12,11 +12,11 @@
       "editor": "textfield"
     },
     "urls": {
-      "title": "urls",
-      "type": "object",
+      "title": "URLs and selectors to test",
+      "type": "array",
       "description": "Enter URLS and queries to check",
-      "prefill": { "url": "http://www.apify.com", "query": "footer #foot-tweet-text" },
-      "editor": "json"
+      "prefill": [{ "url": "http://www.apify.com", "query": "footer #foot-tweet-text" }],
+      "editor": "requestListSources"
     }
   },
   "required": []
