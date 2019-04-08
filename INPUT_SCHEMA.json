@@ -16,7 +16,7 @@
       "type": "array",
       "description": "Enter URLS and queries to check",
       "prefill": [{ "url": "http://www.apify.com", "uniqueKey": "1", "userData": { "query": "footer #foot-tweet-text" } }],
-      "editor": "requestListSources",
+      "editor": "requestListSources"
     }
   },
   "required": []
