@@ -1,0 +1,16 @@
+{
+  "title": "Website content checker",
+  "description": "The actor tests given selectors on given pages and sends report about result.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "email": {
+      "title": "Email",
+      "type": "string",
+      "description": "Email address where to send a report after the Actor finishes the testing",
+      "prefill": "john@doe.xx",
+      "editor": "textfield"
+    }
+  },
+  "required": []
+}

@@ -1,6 +1,8 @@
 const Apify = require('apify');
 
 Apify.main(async () => {
+    const { email } = await Apify.getInput();
+
     const requestList = new Apify.RequestList({
         sources: [
             { url: 'http://www.apify.com/library', userData: { query: '.itemsWrapper .item' } },
@@ -74,31 +76,32 @@ Apify.main(async () => {
     await crawler.run();
 
     // Create report email
-    const dataset = await Apify.openDataset('default');
-    const userEmail = 'vratislav@apify.com';
+    if (email) {
+        const dataset = await Apify.openDataset('default');
 
-    let emailText = '<h1>Website Content Checker report</h1>';
-    emailText += '<table border="1" bordercolor="#a0a9af" cellspacing=”0” cellpadding=”0”>';
-    emailText += '<thead style="background:#d6d6d6"><tr><th>Status</th><th>URL</th><th>Query</th></tr></thead>';
-    emailText += '<tbody>';
+        let emailText = '<h1>Website Content Checker report</h1>';
+        emailText += '<table border="1" bordercolor="#a0a9af" cellspacing=”0” cellpadding=”0”>';
+        emailText += '<thead style="background:#d6d6d6"><tr><th>Status</th><th>URL</th><th>Query</th></tr></thead>';
+        emailText += '<tbody>';
 
-    await dataset.forEach(async (item) => {
-        emailText += `<tr>
+        await dataset.forEach(async (item) => {
+            emailText += `<tr>
                     <td style="color:${item.status ? '#00710e' : '#8e0000'};padding: 5px">${item.status ? 'OK' : 'Failed'}</td>
                     <td style="padding: 5px">${item.url}</td>
                     <td style="padding: 5px">${item.query}</td>
                 </tr>`;
-    });
-    emailText += '</tbody>';
-    emailText += '</table>';
+        });
+        emailText += '</tbody>';
+        emailText += '</table>';
 
-    //send mail
-    console.log(`Sending email with the report to ${userEmail}.`);
-    await Apify.call('apify/send-mail', {
-        to: userEmail,
-        subject: 'Apify Website Content Checker report',
-        html: emailText,
-    });
+        //send mail
+        console.log(`Sending email with the report to ${email}.`);
+        await Apify.call('apify/send-mail', {
+            to: email,
+            subject: 'Apify Website Content Checker report',
+            html: emailText,
+        });
+    }
 
 
     console.log('Website content checker finished.');
