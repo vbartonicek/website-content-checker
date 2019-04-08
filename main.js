@@ -23,7 +23,7 @@ Apify.main(async () => {
 
         handlePageFunction: async ({ request, page }) => {
             // User email for reports
-            const dataset = await Apify.openDataset('default');
+            const dataset = await Apify.openDataset();
 
             // A function to be evaluated by Puppeteer within the browser context.
             const pageFunction = ($items) => {
@@ -72,7 +72,7 @@ Apify.main(async () => {
 
     // Create report email
     if (email) {
-        const dataset = await Apify.openDataset('default');
+        const dataset = await Apify.openDataset();
 
         let emailText = '<h1>Website Content Checker report</h1>';
         emailText += '<table border="1" bordercolor="#a0a9af" cellspacing=”0” cellpadding=”0”>';
