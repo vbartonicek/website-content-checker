@@ -21,7 +21,7 @@ Apify.main(async () => {
             headless: true,
         },
 
-        handlePageFunction: async ({ request, page }) => {
+        handlePageFunction: async ({ request, response, page }) => {
             // User email for reports
             const dataset = await Apify.openDataset();
 
@@ -45,17 +45,9 @@ Apify.main(async () => {
                 title: await page.title(),
                 url: request.url,
                 query: request.userData.query,
-                status: data.length ? true : false,
-                // response: data,
+                cssSelector: data.length ? true : false,
+                httpStatus: response.status()
             });
-
-            // Report result and send email if the test failed
-            if (data.length) {
-                console.log(`Test succeeded - ${request.url} - ${request.userData.query}`);
-            }
-            else {
-                console.log(`Test failed - ${request.url} - ${request.userData.query}`);
-            }
         },
 
         // This function is called if the page processing failed more than maxRequestRetries+1 times.
@@ -63,6 +55,14 @@ Apify.main(async () => {
             console.log(`Request ${request.url} failed too many times`);
             await Apify.pushData({
                 '#debug': Apify.utils.createRequestDebugInfo(request),
+            });
+
+            const dataset = await Apify.openDataset();
+
+            await dataset.pushData({
+                url: request.url,
+                query: request.userData.query,
+                httpStatus: 'Puppeteer error'
             });
         },
     });
@@ -76,13 +76,15 @@ Apify.main(async () => {
 
         let emailText = '<h1>Website Content Checker report</h1>';
         emailText += '<table border="1" bordercolor="#a0a9af" cellspacing=”0” cellpadding=”0”>';
-        emailText += '<thead style="background:#d6d6d6"><tr><th>Status</th><th>URL</th><th>Query</th></tr></thead>';
+        emailText += '<thead style="background:#d6d6d6"><tr><th>HTTP status</th><th>URL</th><th>Page title</th><th>CSS Selector status</th><th>CSS Selector</th></tr></thead>';
         emailText += '<tbody>';
 
         await dataset.forEach(async (item) => {
             emailText += `<tr>
-                    <td style="color:${item.status ? '#00710e' : '#8e0000'};padding: 5px">${item.status ? 'OK' : 'Failed'}</td>
+                    <td style="color:${item.httpStatus < 400 ? '#00710e' : '#8e0000'};padding: 5px">${item.httpStatus}</td>
                     <td style="padding: 5px">${item.url}</td>
+                    <td style="padding: 5px">${item.title}</td>
+                    <td style="color:${item.cssSelector ? '#00710e' : '#8e0000'};padding: 5px">${item.cssSelector ? 'OK' : 'Failed'}</td>
                     <td style="padding: 5px">${item.query}</td>
                 </tr>`;
         });
