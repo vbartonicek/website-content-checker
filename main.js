@@ -2,12 +2,21 @@ const Apify = require('apify');
 const { sendEmail } = require('./src/send_email');
 
 Apify.main(async () => {
-    const { email, urls } = await Apify.getInput();
-    const requestList = new Apify.RequestList({
-        sources: urls
-    });
+    const { email, sitemap, urls } = await Apify.getInput();
 
-// This call loads and parses the URLs from the remote file.
+    const requestList = new Apify.RequestList({
+        sources:
+            sitemap ? [
+                ...urls,
+                {
+                    requestsFromUrl: sitemap,
+                }
+            ] : [
+                ...urls
+            ]
+    });
+    
+    // This call loads and parses the URLs from the remote file.
     await requestList.initialize();
 
     // Create an instance of the PuppeteerCrawler class - a crawler
@@ -23,6 +32,8 @@ Apify.main(async () => {
         },
 
         handlePageFunction: async ({ request, response, page }) => {
+            console.log(`Processing ${request.url}`);
+
             // User email for reports
             const dataset = await Apify.openDataset();
 
@@ -39,7 +50,7 @@ Apify.main(async () => {
                 return data;
             };
 
-            const data = await page.$$eval(request.userData.query, pageFunction);
+            const data = await page.$$eval(request.userData.cssSelector, pageFunction);
 
             // Store the results to the default dataset.
             await dataset.pushData({
@@ -54,7 +65,7 @@ Apify.main(async () => {
         },
 
         // This function is called if the page processing failed more than maxRequestRetries+1 times.
-        handleFailedRequestFunction: async ({ request }) => {
+        handleFailedRequestFunction: async ({ request, error }) => {
             console.log(`Request ${request.url} failed too many times`);
             await Apify.pushData({
                 '#debug': Apify.utils.createRequestDebugInfo(request),
@@ -65,7 +76,7 @@ Apify.main(async () => {
             await dataset.pushData({
                 title: '',
                 url: request.url,
-                httpStatus: 'Puppeteer error',
+                httpStatus: error.message.substr(0,error.message.indexOf(' ')),
                 cssSelector: {
                     query: request.userData.query,
                     result: 0

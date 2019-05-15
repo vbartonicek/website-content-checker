@@ -11,11 +11,18 @@
       "prefill": "john@doe.xx",
       "editor": "textfield"
     },
+    "sitemap": {
+      "title": "Sitemap URL",
+      "type": "string",
+      "description": "Sitemap URL to scrape all website pages",
+      "prefill": "",
+      "editor": "textfield"
+    },
     "urls": {
       "title": "URLs and selectors to test",
       "type": "array",
       "description": "Enter URLS and queries to check",
-      "prefill": [{ "url": "http://www.apify.com", "userData": { "query": "footer #foot-tweet-text" } }],
+      "prefill": [{ "url": "http://www.apify.com", "userData": { "cssSelector": "footer #foot-tweet-text" } }],
       "editor": "requestListSources"
     }
   },
