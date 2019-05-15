@@ -1,4 +1,5 @@
 const Apify = require('apify');
+const { sendEmail } = require('./src/send_email');
 
 Apify.main(async () => {
     const { email, urls } = await Apify.getInput();
@@ -44,9 +45,11 @@ Apify.main(async () => {
             await dataset.pushData({
                 title: await page.title(),
                 url: request.url,
-                query: request.userData.query,
-                cssSelector: data.length ? true : false,
-                httpStatus: response.status()
+                httpStatus: response.status(),
+                cssSelector: {
+                    query: request.userData.query || '',
+                    result: data.length
+                }
             });
         },
 
@@ -60,9 +63,13 @@ Apify.main(async () => {
             const dataset = await Apify.openDataset();
 
             await dataset.pushData({
+                title: '',
                 url: request.url,
-                query: request.userData.query,
-                httpStatus: 'Puppeteer error'
+                httpStatus: 'Puppeteer error',
+                cssSelector: {
+                    query: request.userData.query,
+                    result: 0
+                }
             });
         },
     });
@@ -71,35 +78,8 @@ Apify.main(async () => {
     await crawler.run();
 
     // Create report email
-    if (email) {
-        const dataset = await Apify.openDataset();
-
-        let emailText = '<h1>Website Content Checker report</h1>';
-        emailText += '<table border="1" bordercolor="#a0a9af" cellspacing=”0” cellpadding=”0”>';
-        emailText += '<thead style="background:#d6d6d6"><tr><th>HTTP status</th><th>URL</th><th>Page title</th><th>CSS Selector status</th><th>CSS Selector</th></tr></thead>';
-        emailText += '<tbody>';
-
-        await dataset.forEach(async (item) => {
-            emailText += `<tr>
-                    <td style="color:${item.httpStatus < 400 ? '#00710e' : '#8e0000'};padding: 5px">${item.httpStatus}</td>
-                    <td style="padding: 5px">${item.url}</td>
-                    <td style="padding: 5px">${item.title}</td>
-                    <td style="color:${item.cssSelector ? '#00710e' : '#8e0000'};padding: 5px">${item.cssSelector ? 'OK' : 'Failed'}</td>
-                    <td style="padding: 5px">${item.query}</td>
-                </tr>`;
-        });
-        emailText += '</tbody>';
-        emailText += '</table>';
-
-        //send mail
-        console.log(`Sending email with the report to ${email}.`);
-        await Apify.call('apify/send-mail', {
-            to: email,
-            subject: 'Apify Website Content Checker report',
-            html: emailText,
-        });
-    }
-
+    const dataset = await Apify.openDataset();
+    if (email) await sendEmail(email, dataset);
 
     console.log('Website content checker finished.');
 });
