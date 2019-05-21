@@ -31,6 +31,10 @@ Apify.main(async () => {
             headless: true,
         },
 
+        // Concurrency settings
+        minConcurrency: 1,
+        maxConcurrency: 4,
+
         handlePageFunction: async ({ request, response, page }) => {
             console.log(`Processing ${request.url}`);
 

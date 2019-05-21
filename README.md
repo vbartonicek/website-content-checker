@@ -1,7 +1,7 @@
 # Website content checker
 Simple Apify actor for checking website pages and its content. URLs to check can be set manually or via provided sitemap file. Optionally it can send a report via email.
 
-Typical use cases are healtchecks of websites, dynamic page content and third party plugins. 
+Typical use cases are health checks of websites, dynamic page content and third party plugins. 
 
 ## INPUT
 
