@@ -15,7 +15,7 @@ Apify.main(async () => {
                 ...urls
             ]
     });
-    
+
     // This call loads and parses the URLs from the remote file.
     await requestList.initialize();
 
@@ -58,8 +58,8 @@ Apify.main(async () => {
                 url: request.url,
                 httpStatus: response.status(),
                 cssSelector: {
-                    query: request.userData.query || '',
-                    result: data.length
+                    query: request.userData.cssSelector || '',
+                    results: data.length
                 }
             });
         },
@@ -78,8 +78,8 @@ Apify.main(async () => {
                 url: request.url,
                 httpStatus: error.message.substr(0,error.message.indexOf(' ')),
                 cssSelector: {
-                    query: request.userData.query,
-                    result: 0
+                    query: request.userData.cssSelector,
+                    results: 0
                 }
             });
         },
